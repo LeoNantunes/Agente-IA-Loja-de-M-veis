@@ -1,0 +1,492 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caminho-webhook-detalhes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        100,
+        0
+      ],
+      "id": "e4410ca3-700a-4ae2-ab5c-919a781f6110",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = items[0].json;\n\nreturn [\n  {\n    json: {\n      data: inputData\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "7c9d3d36-27f1-4fb0-a4ac-489fe78f8e01",
+      "name": "concatenando"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f31f7017-f969-44fb-a29d-dc526d4aa49c",
+              "leftValue": "={{ $('concatenando').first().json.data.body.body.body.stageClient }}",
+              "rightValue": "waitChoice",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "94ddc3a5-5533-4c9a-b3fa-6612fbabfb04",
+      "name": "waitCatalog",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        840,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        280
+      ],
+      "id": "85861232-cc00-46da-bcbb-2235378edca8",
+      "name": "gpt"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "keyValue": "={{ $('concatenando').first().json.data.body.body.body.phoneClient }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        140
+      ],
+      "id": "fd568d72-b6ff-43da-a8b2-84c2ae35acec",
+      "name": "getChoice"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mensagem do Cliente: \"{{ $('concatenando').first().json.data.body.body.body.messageClient }}\"",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é uma assistente da empresa Rustic Dream House, voce deverá verificar a resposta do cliente e verificar a Lista de Produtos que está aqui dentro \"{{ $('getChoice').first().json.tempProdutos }}\" e verificar se a mensagem do cliente é algum dos produtos dentro da lista. \n\nApós você identificar que a mensagem do cliente é algum dos produtos da sua lista, você deverá OBRIGATORIAMENTE responder dessa forma dividindo em pedaços a primeira resposta e a url do produto escolhido pelo cliente: \n\n\"pedaco1\": \"Muito obrigada, espero que você esteja tendo um ótimo dia\"\n\n\"pedaco2\": \"https://catalogo.rusticdreamhouse.com/produto/aparador-verde-agua/\"\n\nA resposta do cliente não precisa ser obrigatoriamente igual ao nome do produto, por exemplo, se existir um produto de nome \"Rack Em Madeira Macica\" e o cliente responder \"Rack de Madeira\", então você deverá aceitar como se ele tivesse dito \"Rack Em Madeira Macica\", ou seja, se 25% da resposta do cliente envolver algum produto da lista, então responda normalmente: \n\n\"pedaco1\": \"Muito obrigada, espero que você esteja tendo um ótimo dia\"\n\n\"pedaco2\": \"https://catalogo.rusticdreamhouse.com/produto/aparador-verde-agua/\"\n\nCaso a mensagem do cliente não seja nenhum dos produtos da sua lista, informe ao cliente.\n\n"
+        }
+      },
+      "id": "f14ee827-32e0-4276-8995-de6301793616",
+      "name": "assistente",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1440,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "415ca5cb-2a15-4801-b559-051b613b3c9b",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "ótimo dia",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        140
+      ],
+      "id": "0ffda791-d95f-41c1-80e9-1095e76bc45c",
+      "name": "contemExatamente"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('answerPiece').last().json.resposta }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2100,
+        80
+      ],
+      "id": "ddd3821d-1258-4f6e-a497-072385849f46",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawOutput = $json.output;\n\nconst match = rawOutput.match(/\"pedaco1\":(.|\\n|\\r)*\"pedaco[0-9]+\":\\s*\"(https?:[^\\\"]*)\"/);\nconst pedacosText = match ? match[0] : '';\n\nconst fixedJsonString = `{${pedacosText.replace(/\\n/g, ',')}}`;\n\nconst jsonInput = JSON.parse(fixedJsonString);\n\nconst respostasArray = [];\nif (jsonInput.pedaco1) respostasArray.push(jsonInput.pedaco1);\nif (jsonInput.pedaco2) respostasArray.push(jsonInput.pedaco2);\n\nreturn respostasArray.map(resposta => ({ json: { resposta: resposta } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        80
+      ],
+      "id": "e80c7c73-9d2c-401d-8322-0434d2228422",
+      "name": "answerPiece"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.all()[0].json;\nconst html = String(response.response || response.body || response.data || response);\n\nconst extractText = (pattern, html) => {\n  const match = String(html).match(pattern);\n  return match ? match[1].trim() : null;\n};\n\nconst cleanText = (text) => text ? text.replace(/\\s+/g, ' ').replace(/&nbsp;/g, ' ').trim() : null;\n\nlet price = null;\nconst normalPriceMatch = html.match(/<div class=\"elementor-widget-container\">\\s*<p class=\"price\">[\\s\\S]*?<span class=\"woocommerce-Price-amount amount\">[\\s\\S]*?<bdi>[\\s\\S]*?R\\$(?:&nbsp;|\\s)*([\\d.,]+)/i);\nconst discountPriceMatch = html.match(/<span class=\"price\">[\\s\\S]*?<ins[^>]*>[\\s\\S]*?<span class=\"woocommerce-Price-amount amount\">[\\s\\S]*?<bdi>[\\s\\S]*?R\\$(?:&nbsp;|\\s)*([\\d.,]+)/i);\nconst jsonLdMatch = html.match(/\"price\":\"([\\d.]+)\"/i);\n\nconst priceValue = normalPriceMatch?.[1] || discountPriceMatch?.[1] || jsonLdMatch?.[1];\nprice = priceValue ? `R$ ${priceValue.replace('.', ',')}` : null;\n\nconst productImages = [];\nconst imageMatches = html.matchAll(/<a[^>]*href=\"(https?:\\/\\/[^\"]+?\\.(?:jpg|jpeg|png|gif|webp))\"[^>]*>/gi);\nfor (const match of imageMatches) {\n  if (match[1] && !productImages.includes(match[1])) {\n    productImages.push(match[1]);\n  }\n}\n\nconst productData = {\n  productInfo: {\n    name: cleanText(html.match(/<h1\\s+class=\"product_title[^>]*>([\\s\\S]*?)<\\/h1>/i)?.[1]),\n    price: price,\n    images: productImages\n   }\n };\n\nreturn productData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2220,
+        80
+      ],
+      "id": "b5f835dc-797e-4ddc-a508-3c5a7f099a29",
+      "name": "codeN8h"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2340,
+        220
+      ],
+      "id": "e371754c-a798-48b9-b15c-550757e9f7dc",
+      "name": "gpt1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Me informe apenas os detalhes mais importantes do produto",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é uma assistente da empresa Rustic Dream House, voce deverá verificar as informações do produto aqui: \"{{ JSON.stringify($json.productInfo) }}\" e identificar as informações mais importantes. \n\nNome do Cliente: \"{{ $('concatenando').first().json.data.body.body.body.nomeWpp }}\"\n\nApós você identificar as informações mais importantes do produto, OBRIGATORIAMENTE separe a sua resposta como no exemplo abaixo, sempre colocando as URL/links de IMAGENS DO PRODUTO como último lugar, responda de forma simpática:\n\n\"pedaco1\": \"[NOME_DO_CLIENTE], o Aparador Verde Água tem 3 gavetas, ele é ideal para organizar e decorar com estilo. Ele possui um design moderno e seu acabemento é de alta qualidade\"\n\n\"pedaco2\": \"Temos ele nas cores Azul Noturno, Branco, Cinza, Off-white, Preto, Verde e nosso lindo Verde Água\"\n\n\"pedaco3\": \"Dá uma olhadinha nessas imagens do nosso lindo Aparador\"\n\n\"pedaco4\": \"https://catalogo.rusticdreamhouse.com/wp-content/uploads/2025/01/imagem-exemplo-1.jpeg\"\n\n\"pedaco5\": \"https://catalogo.rusticdreamhouse.com/wp-content/uploads/2025/01/imagem-exemplo-2.jpg\""
+        }
+      },
+      "id": "46374109-6e2a-4e9c-92a6-b721add7968a",
+      "name": "assistenteProduct",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2340,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const entradaBruta = $input.item.json.output;\n\nconst matches = [...entradaBruta.matchAll(/\"pedaco\\d+\":\\s*\"[^\"]*\"/g)];\n\nif (!matches || matches.length === 0) {\n  throw new Error(\"Nenhum pedaco encontrado no texto.\");\n}\n\nconst jsonBody = matches.map(match => match[0]).join(',');\nconst jsonFinal = `{${jsonBody}}`;\n\nlet dados;\ntry {\n  dados = JSON.parse(jsonFinal);\n} catch (erro) {\n  throw new Error(\"Erro ao fazer parse do JSON: \" + erro.message);\n}\n\nconst saidas = [];\nfor (const chave of Object.keys(dados).sort()) {\n  saidas.push({\n    json: {\n      mensagem: dados[chave]\n    }\n  });\n}\n\nreturn saidas;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2620,
+        80
+      ],
+      "id": "651ff656-8a3d-42db-87e8-fc54dda8e3ff",
+      "name": "saidaDinamica"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2840,
+        80
+      ],
+      "id": "32d330b6-e99b-4578-a0df-91e3af2ab8c7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        300
+      ],
+      "id": "eca965bc-6de8-4cad-ae1e-35ed41d7ebb6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eb6efd43-3986-4e78-8673-97693b66c642",
+              "leftValue": "={{ $('Replace Me').first().json.mensagem }}",
+              "rightValue": "https",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3000,
+        300
+      ],
+      "id": "8d772a13-3370-4e14-bf03-68dafeb0d254",
+      "name": "ifMedia"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mensagens = [\n  \"Dá uma olhada! 📸\",\n  \"O que acha? 📸\",\n  \"Lindo, né? 👆🏻\",\n  \"Olha que produto mais lindo! 😊\",\n  \"repara bem nos lindos detalhes 🥰\",\n  \"repara bem nos detalhes! 🥹\",\n  \"olha que lindo! 😊\",\n  \"o que acha? lindo, ne?! 🥹\",\n  \"dá uma olhadinha 🥹\",\n  \"perfeito, ne? 😊\",\n  \"olha que detalhes incríveis! 🥹\"\n];\n\nconst mensagemEscolhida = mensagens[Math.floor(Math.random() * mensagens.length)];\n\nreturn {\n  mensagem: mensagemEscolhida\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        520
+      ],
+      "id": "f33ee03a-bee3-478c-b526-747c49cf011c",
+      "name": "random Msg"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('concatenando').first().json.data.body.body.body.urlDinamicaEventMedia }}{{ $('concatenando').first().json.data.body.body.body.instanciaDinamica }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $('concatenando').first().json.data.body.body.body.apikeyParametro }}",
+              "value": "={{ $('concatenando').first().json.data.body.body.body.globalKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('concatenando').first().json.data.body.body.body.phoneClient }}\",\n  \"options\": {\n    \"delay\": 6000,\n    \"presence\": \"composing\"\n  },\n  \"mediaMessage\": {\n    \"mediatype\": \"image\",\n    \"caption\": \"{{ $('random Msg').first().json.mensagem }}\",\n    \"media\": \"{{ $('Replace Me').first().json.mensagem }}\"\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3000,
+        520
+      ],
+      "id": "f25fed47-a935-45e7-96e4-b1452588ec5c",
+      "name": "sendPicture"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "rusticDreamHouseRegioes",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        920
+      ],
+      "id": "029967be-c17d-4ccb-a58d-74dcc9f3deb1",
+      "name": "getValores"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nif (items.length === 0) {\n  return { resultado: \"Nenhum dado encontrado.\" };\n}\n\nlet resultado = \"\";\n\nitems.forEach((item) => {\n  resultado += `\n  Região: ${item.json.nomeRegiao.trim()}\n  DDD: ${item.json.regiaoDDD}\n  Valor Cobrado: ${item.json.valorCobrado.trim()}\n  --------------------------\n  `;\n});\n\nresultado = resultado.trim();\nreturn { resultado };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        920
+      ],
+      "id": "86f909b9-b1d7-4716-b1a8-0258e32517c5",
+      "name": "coden8n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f31f7017-f969-44fb-a29d-dc526d4aa49c",
+              "leftValue": "={{ $('concatenando').first().json.data.body.body.body.stageClient }}",
+              "rightValue": "orcaTres",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "97c68842-aaad-4e8a-83d9-53f760151f8e",
+      "name": "orcaTres",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        840,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.body.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "orcaTres"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2580,
+        820
+      ],
+      "id": "d8927a59-f5c9-4b00-9619-ee0828c6b16b",
+      "name": "orca Tres"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        1060
+      ],
+      "id": "83b52adb-e782-457d-9e7f-be115a2d8e11",
+      "name": "gpt3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseOrcamento",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.body.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "regiaoResposta",
+              "fieldValue": "={{ $('concatenando').first().json.data.body.body.body.choiceClient }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        920
+      ],
+      "id": "43d72fdd-aeed-4d22-88ed-15393a126030",
+      "name": "updateRegiao"
+    }
+  ],
+  "connections": {},
+  "pinData": {},
+  "meta": {}
+}

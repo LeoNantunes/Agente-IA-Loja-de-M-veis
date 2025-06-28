@@ -1,0 +1,278 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caminho-webhook-catalogo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -360
+      ],
+      "id": "27e558d6-a6c6-47d9-837a-2c62b4db1952",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = items[0].json;\n\nreturn [\n  {\n    json: {\n      data: inputData\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        -360
+      ],
+      "id": "e00714f4-470e-44e6-b544-47185e4e440a",
+      "name": "concatenando"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f31f7017-f969-44fb-a29d-dc526d4aa49c",
+              "leftValue": "={{ $('concatenando').first().json.data.body.body.stageClient }}",
+              "rightValue": "waitCatalog",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ddbc0e6e-e348-40c7-8c0b-9650ffc22b4e",
+      "name": "waitCatalog",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1700,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://catalogo.rusticdreamhouse.com/categoria-produto/aparadores/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2520,
+        -840
+      ],
+      "id": "8f9577f8-3aca-426e-9b19-aa8f0808f747",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.all()[0].json;\nconst html = response.response || response.body || response.data || response;\n\nconst productLinks = [];\nconst productUrlPattern = /<a\\s+[^>]*href=\"(https?:\\/\\/[^\\/]+\\/produto\\/[^\\/]+\\/)\"[^>]*>/gi;\n\nlet match;\nwhile ((match = productUrlPattern.exec(html)) !== null) {\n  if (match[1]) {\n    productLinks.push(match[1]);\n  }\n}\n\nconst uniqueProductLinks = [...new Set(productLinks)];\n\nreturn {\n  productUrls: uniqueProductLinks,\n  count: uniqueProductLinks.length,\n  message: uniqueProductLinks.length > 0 ? \n    `${uniqueProductLinks.length} produtos` : \n    \"Nenhum link de produto encontrado\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3180,
+        260
+      ],
+      "id": "5027d9cc-dd1c-4c57-a7c2-a49d99fcdab0",
+      "name": "codeN8n"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('concatenando').first().json.data.body.body.escolhaClienteID }}",
+                    "rightValue": "aparadores",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "de9f1e1e-626e-4bbe-920a-928a8064472d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "aparadores"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6ecd8c6e-a640-4c0a-858a-776cd398c360",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.body.escolhaClienteID }}",
+                    "rightValue": "balcao_banheiro",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "balcao_banheiro"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2060,
+        40
+      ],
+      "id": "152eab5b-2e87-4d5c-ab5f-8369115637a8",
+      "name": "checkCategory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Me informe quais produtos existem no catálogo passado para você",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é uma assistente da empresa Rustic Dream House, voce deverá verificar a Lista de Produtos de \"{{ $('concatenando').first().json.data.body.body.choiceClient }}\" aqui: \"{{ $('codeN8n').first().json.productUrls }}\" e informar de forma simpática os produtos para o cliente, ou seja, o nome do produto está localizado após \"/produto/\".\n\nVocê é proibido de se apresentar ou fazer alguma saudação.\n\nAqui está o nome do Cliente: \"{{ $('concatenando').first().json.data.body.body.nomeWpp }}\", utilize o primeiro nome dele.\n\nExemplo de Resposta:\n\n[NOME_DO_CLIENTE], temos esses/essas {{ $('concatenando').first().json.data.body.body.choiceClient }}:\n\n▸ *Aparador Amarelo*\n▸ *Aparador Verona*\n▸ *Aparador com Gavetas*\n▸ *Aparador Verde Água*\n\nQual desses produtos você gostaria de dar uma olhada? "
+        }
+      },
+      "id": "44c3fdca-30f8-434d-8c9e-a702e5e70616",
+      "name": "aparadores",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3700,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('concatenando').first().json.data.body.body.urlDinamicaEventMessage }}{{ $('concatenando').first().json.data.body.body.instanciaDinamica }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $('concatenando').first().json.data.body.body.apikeyParametro }}",
+              "value": "={{ $('concatenando').first().json.data.body.body.globalKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('concatenando').first().json.data.body.body.phoneClient }}\",\n  \"options\": {\n    \"delay\": 1600,\n    \"presence\": \"composing\",\n    \"linkPreview\": true\n  },\n  \"textMessage\": {\n    \"text\": \"{{ $('aparadores').first().json.output.replace(/(\\r\\n|\\n|\\r)/gm, '\\\\n').replace(/\"/g, '\\\\\"') }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3980,
+        260
+      ],
+      "id": "713929c2-60b0-4235-a899-1ab116fb746d",
+      "name": "asnwerI.A1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "waitChoice"
+            },
+            {
+              "fieldId": "tempProdutos",
+              "fieldValue": "={{ $('codeN8n').first().json.productUrls }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4100,
+        260
+      ],
+      "id": "d0124031-3ff8-44ba-b631-5c5b3071407b",
+      "name": "waitChoice"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://SUA_INSTANCIA_N8N.com/webhook/caminho-webhook-detalhes",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('concatenando').first().json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1700,
+        1360
+      ],
+      "id": "d9598292-9d74-4a0f-8249-5f25ccb988ff",
+      "name": "parteTres1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3700,
+        400
+      ],
+      "id": "f5947149-cf40-49b5-af44-4cd3cf6f8af0",
+      "name": "gpt2"
+    }
+  ],
+  "connections": {},
+  "pinData": {},
+  "meta": {}
+}

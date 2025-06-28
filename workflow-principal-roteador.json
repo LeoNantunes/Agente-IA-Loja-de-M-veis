@@ -1,0 +1,1008 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caminho-webhook-principal",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        540,
+        -160
+      ],
+      "id": "e68e154a-c2c7-4d1e-ac2a-524ebccaeca2",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "=temp{{ $('concatenando').first().json.data.body.body.phoneClient }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        900,
+        -160
+      ],
+      "id": "1fd9a7a1-4088-440f-9c75-ba5d9c311ad4",
+      "name": "getPhoneNumber"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a9c80631-90b2-40bb-b1e4-fd523f6c5ed5",
+              "leftValue": "={{ $json.propertyName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        -160
+      ],
+      "id": "e3d48abc-90fe-4fe1-8f3b-039a74b2d8f8",
+      "name": "isEmpty"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=temp{{ $('concatenando').first().json.data.body.body.phoneClient }}",
+        "value": "true"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        660,
+        20
+      ],
+      "id": "a04a393b-5e9e-4b6a-92b5-511a34b6c457",
+      "name": "setPhoneNumber"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "=temp{{ $('concatenando').first().json.data.body.body.phoneClient }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        20
+      ],
+      "id": "49b921e0-ed98-4afc-a272-4619f3efacaf",
+      "name": "deletePN"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = items[0].json;\n\nreturn [\n  {\n    json: {\n      data: inputData\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ],
+      "id": "922bd3f4-6718-46f4-9bdb-21665acabc94",
+      "name": "concatenando"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2959b6b6-5379-4a8b-8198-04f43ead9bc9",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.messageClient.toString().trim().toLowerCase() }}",
+                    "rightValue": "=menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('concatenando').first().json.data.body.stageClient }}",
+                    "rightValue": "\"\"",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "bf1cf5b9-152f-4c2a-9fff-903ef665017f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9ac94643-c73a-4b15-a785-ab29b8961e02",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.stageClient }}",
+                    "rightValue": "respostaMenu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "respostaMenu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "77d44f02-cc7b-4e26-8d24-951989771060",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.stageClient }}",
+                    "rightValue": "olaNovamente",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "olaNovamente"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "anotherStage"
+        }
+      },
+      "id": "540de97b-6f81-406f-bf25-84be110474d2",
+      "name": "specificStages",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1220,
+        160
+      ],
+      "id": "80e09506-595f-44aa-9c4f-ee16eb8f73c5",
+      "name": "gpt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://SUA_INSTANCIA_N8N.com/webhook/caminho-webhook-catalogo",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('concatenando').first().json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1880,
+        300
+      ],
+      "id": "fb66fe99-a0a7-4fe7-995b-5e2859903ec8",
+      "name": "parteDois"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mensagem do Cliente: \"{{ $('concatenando').first().json.data.body.messageClient }}\".",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é um assistente da empresa Rustic Dream House. Sua função é classificar as dúvidas dos clientes de acordo com a descrição abaixo.\n\nVocê vai classificar a mensagem dos clientes em uma dessas categorias:\n \n1. \"Ok, irei te transferir, um momento!\" -> Quando o cliente responder algo relacionado a \"Tenho Interesse\", \"Quero Comprar\", \"Quero Fazer o Pedido\", \"Quero fazer orçamento\", \"Fazer Orçamento\", \"Quero Agendar\", \"Quero fazer o agendamento\", \"incrível, quero um desse\", \"quero um desse\" ou algo relacionado a compra ou iniciar o orçamento, responda OBRIGATORIAMENTE: \"Ok, irei te transferir, um momento!. Caso o cliente tenha dúvidas sobre como funciona o agendamento, NÃO responda \"Ok, irei te transferir, um momento!\" mas sim responda: \"Irei retirar as suas dúvidas agora mesmo!\". SE O CLIENTE RESPONDER COM \"tenho interesse nos materiais do corredor, me ajuda\" ou algo mais voltado para dúvidas, mesmo que ele diga que tem interesse, responda OBRIGATORIAMENTE com \"Irei retirar as suas dúvidas agora mesmo!\". \n\n2. \"Irei retirar as suas dúvidas agora mesmo!\" -> Qualquer outra mensagem ou qualquer outra situação.\n\nExemplo de Diálogo para você responder com \"Irei retirar as suas dúvidas agora mesmo!\":\n\n- Diálogo 1 - \nCliente: \"Tenho interesse nos materiais do corredor, me ajuda\"\n\nVocê: \"Irei retirar as suas dúvidas agora mesmo!\".\n\nOu seja, você vai identificar a mensagem do cliente e vai responder de acordo com os exemplos acima."
+        }
+      },
+      "id": "cc3da507-2c53-470e-95c3-87fad94ad4eb",
+      "name": "classificadorGeral",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1220,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "44647d16-3c9f-4b3e-b1ef-b5b8fc1eddb8",
+                    "leftValue": "={{ $('classificadorGeral').first().json.output }}",
+                    "rightValue": "transferir",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "transferir"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2f82ee74-13f8-44af-8bfc-0a79d2850320",
+                    "leftValue": "={{ $('classificadorGeral').first().json.output }}",
+                    "rightValue": "retirar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "retirar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1500,
+        20
+      ],
+      "id": "e7a6b300-9953-47b8-bf99-2245c5575b7b",
+      "name": "verificaNDO"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "=inicioOrca"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1880,
+        -160
+      ],
+      "id": "5b7791b5-9c87-4e24-9d41-461aea0fe7a1",
+      "name": "inicioOrca1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('concatenando').first().json.data.body.urlDinamicaEventMessage }}{{ $('concatenando').first().json.data.body.instanciaDinamica }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $('concatenando').first().json.data.body.apikeyParametro }}",
+              "value": "={{ $('concatenando').first().json.data.body.globalKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('concatenando').first().json.data.body.phoneClient }}\",\n  \"options\": {\n    \"delay\": 1600,\n    \"presence\": \"composing\",\n    \"linkPreview\": true\n  },\n  \"textMessage\": {\n    \"text\": \"👋 _Olá! Bem-vindo(a) à *Rustic Dream House*!_\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2180,
+        -240
+      ],
+      "id": "8c865598-6c9c-4cc6-bf97-1d37b631309d",
+      "name": "enviarSaudacao3",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8452b580-264a-463c-b000-a0990e84f1ad",
+              "leftValue": "={{ $('concatenando').first().json.data.body.messageType }}",
+              "rightValue": "listResponseMessage",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2120,
+        280
+      ],
+      "id": "0f96e2b6-dedc-454c-9bd1-7f643a5e8dce",
+      "name": "tipoResposta"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "=respostaMenu"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        -240
+      ],
+      "id": "8712d628-e922-437c-b812-ee3b6ff8a25c",
+      "name": "respostaMenu",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6223c64a-739a-4338-8538-ed24142bd54d",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "atendente",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "atendente"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "clientes_feedbacks",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "16311663-8cf4-4206-bc20-6ac185645fc6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "clientFeedbacks"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e156b7d3-c31b-42be-af71-c6630c2ee92f",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "catalogo_moveis",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cataloMoveis"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "23eea82c-e556-4449-95dc-d6a5023aa50f",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "personalizar_movel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "persoMovel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bd44c74a-3166-41ae-ac01-5892a7953955",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "sobre_nos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sobreNos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "049433c8-d986-409e-9341-d463f9364f1d",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "orcamento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "orcamento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f164155b-e8d4-4700-96a0-22bf27dd1cf0",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "recomendacao",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "recomendacao"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e9851375-fc29-4552-a62f-5612aaeae5c2",
+                    "leftValue": "={{ $('concatenando').first().json.data.body.escolhaClienteID }}",
+                    "rightValue": "adicoes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "adicoes"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2500,
+        40
+      ],
+      "id": "c53942ca-cb98-41a7-a836-8ae67c36a93c",
+      "name": "checkOptions"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "=blockAuto"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        -340
+      ],
+      "id": "ccbdc2c4-7191-499d-bb1d-72bc159806aa",
+      "name": "blockAuto",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "=waitCatalog"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3220,
+        140
+      ],
+      "id": "1b805991-7e86-42d8-a5d8-770d1284d6f2",
+      "name": "waitCatalog",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "rusticDreamHouseDB",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wppCliente",
+              "condition": "eq",
+              "keyValue": "={{ $('concatenando').first().json.data.body.phoneClient }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "stageClient",
+              "fieldValue": "=respostaMenu"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2680,
+        -400
+      ],
+      "id": "a4d83b29-0879-48d9-84fa-8e0104c0940e",
+      "name": "respostaMenu1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('concatenando').first().json.data.body.urlDinamicaEventList }}{{ $('concatenando').first().json.data.body.instanciaDinamica }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "={{ $('concatenando').first().json.data.body.apikeyParametro }}",
+              "value": "={{ $('concatenando').first().json.data.body.globalKey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"number\": \"{{ $('concatenando').first().json.data.body.phoneClient }}\",\n    \"options\": {\n        \"delay\": 2100,\n        \"presence\": \"composing\"\n    },\n    \"listMessage\": {\n        \"title\": \"\",\n        \"description\": \"Como posso te ajudar hoje? Escolha uma opção abaixo:\",\n        \"buttonText\": \"Abrir Opções\",\n        \"footerText\": \"\",\n        \"sections\": [\n            {\n                \"title\": \"🔍 Menu Principal\",\n                \"rows\": [\n                    {\n                        \"title\": \"📌 Ver catálogo de móveis\",\n                        \"rowId\": \"catalogo_moveis\"\n                    },\n                    {\n                        \"title\": \"🎨 Personalizar um móvel\",\n                        \"rowId\": \"personalizar_movel\"\n                    },\n                    {\n                        \"title\": \"📦 Fazer orçamento\",\n                        \"rowId\": \"orcamento\"\n                    },\n                    {\n                        \"title\": \"👥 Clientes e Feedbacks\",\n                        \"rowId\": \"clientes_feedbacks\"\n                    },\n                    {\n                        \"title\": \"💡 Recomendação\",\n                        \"rowId\": \"recomendacao\"\n                    },\n                    {\n                        \"title\": \"🏡 Sobre nós\",\n                        \"rowId\": \"sobre_nos\"\n                    },\n                    {\n                        \"title\": \"💬 Falar com um atendente\",\n                        \"rowId\": \"atendente\"\n                    },\n                    {\n                        \"title\": \"❌ (DEV) Novas Adições\",\n                        \"rowId\": \"adicoes\"\n                    }\n                ]\n            }\n        ]\n    }\n}",
+        "options": {}
+      },
+      "id": "eed4441a-083c-4c44-9b37-9ea2cb4be6c6",
+      "name": "enviarMenu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2180,
+        -400
+      ],
+      "retryOnFail": true,
+      "executeOnce": true,
+      "maxTries": 5
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "concatenando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getPhoneNumber": {
+      "main": [
+        [
+          {
+            "node": "isEmpty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isEmpty": {
+      "main": [
+        [
+          {
+            "node": "setPhoneNumber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "setPhoneNumber": {
+      "main": [
+        [
+          {
+            "node": "deletePN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "deletePN": {
+      "main": [
+        [
+          {
+            "node": "classificadorGeral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "concatenando": {
+      "main": [
+        [
+          {
+            "node": "getPhoneNumber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "specificStages": {
+      "main": [
+        [
+          {
+            "node": "enviarMenu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "enviarSaudacao3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "tipoResposta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "parteDois",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "classificadorGeral",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "classificadorGeral": {
+      "main": [
+        [
+          {
+            "node": "verificaNDO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verificaNDO": {
+      "main": [
+        [
+          {
+            "node": "inicioOrca1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "specificStages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "enviarSaudacao3": {
+      "main": [
+        [
+          {
+            "node": "enviarMenu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tipoResposta": {
+      "main": [
+        [
+          {
+            "node": "checkOptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "checkOptions": {
+      "main": [
+        [
+          {
+            "node": "blockAuto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "waitCatalog",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    "enviarMenu": {
+      "main": [
+        [
+          {
+            "node": "respostaMenu1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "485bf03aeb34423dce2ae59ecfcfe015025cd6633484c05d652cd71e51132630"
+  }
+}
